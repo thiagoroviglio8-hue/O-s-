@@ -23,7 +23,7 @@ module.exports = {
       .setDescription(message).setFooter({ text: `Obsidian Network • ${interaction.guild.name}` })
       .setTimestamp();
     await channel.send({ content: mention === "everyone" ? "@everyone" : mention === "here" ? "@here" : undefined,
-      embeds: [embed], allowedMentions: { parse: mention === "none" ? [] : [mention] } });
+      embeds: [embed], allowedMentions: { parse: mention === "none" ? [] : ["everyone"] } });
     await interaction.reply({ content: `✅ Anuncio publicado en ${channel}.`, ephemeral: true });
   }
 };
