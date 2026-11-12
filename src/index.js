@@ -4,7 +4,7 @@ const path = require("node:path");
 const {
   Client, GatewayIntentBits, Partials, Collection, Events, EmbedBuilder,
   ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder,
-  ButtonBuilder, ButtonStyle, ChannelType, PermissionsBitField
+  ButtonBuilder, ButtonStyle, ChannelType, PermissionsBitField, REST, Routes
 } = require("discord.js");
 const { getGuild } = require("./utils/store");
 
@@ -23,7 +23,23 @@ for (const file of fs.readdirSync(commandDir).filter(f => f.endsWith(".js"))) {
   }
 }
 
-client.once(Events.ClientReady, c => console.log(`Conectado como ${c.user.tag}`));
+client.once(Events.ClientReady, async c => {
+  console.log(`Conectado como ${c.user.tag}`);
+
+  // Registra automáticamente todos los comandos Slash al iniciar el bot.
+  try {
+    const rest = new REST({ version: "10" }).setToken(process.env.DISCORD_TOKEN);
+    const body = [...commands.values()].map(command => command.data.toJSON());
+    const route = process.env.GUILD_ID
+      ? Routes.applicationGuildCommands(c.application.id, process.env.GUILD_ID)
+      : Routes.applicationCommands(c.application.id);
+
+    await rest.put(route, { body });
+    console.log(`✅ Comandos Slash registrados automáticamente: ${body.length} (${process.env.GUILD_ID ? "servidor" : "globales"}).`);
+  } catch (error) {
+    console.error("❌ No se pudieron registrar automáticamente los comandos Slash:", error);
+  }
+});
 
 client.on(Events.InteractionCreate, async interaction => {
   try {
